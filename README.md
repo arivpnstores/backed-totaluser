@@ -1,18 +1,43 @@
 # VPN Total User Backend
 
-Mini backend REST API untuk mengambil jumlah total akun VPN dari server.
+Mini backend REST API untuk mengambil jumlah total akun VPN dari server menggunakan **Potato Tunneling (p0t4t0)**.
+
+## Tentang
+
+Backend ini dibuat khusus untuk server yang menggunakan script **Potato Tunneling** (`p0t4t0`). Script `p0t4t0` adalah tool管理 panel VPN yang berjalan di VPS Linux (Ubuntu/Debian) dan menyediakan layanan:
+
+- SSH/OpenVPN
+- Vmess (Xray)
+- Vless (Xray)
+- Trojan (Xray)
+
+Backend ini akan menjalankan command `desain p0t4t0` lalu membaca output-nya untuk menampilkan jumlah akun VPN dalam format JSON.
 
 ## Persyaratan
 
+- VPS Linux (Ubuntu 20.04/22.04/24.04 atau Debian 11/12)
+- Script **Potato Tunneling** (`p0t4t0`) sudah terinstall
 - Node.js v18+
 - npm
-- Command `p0t4t0` sudah terinstall dan bisa dijalankan di terminal
 
-## Install
+## GitHub
+
+https://github.com/arivpnstores/backed-totaluser
+
+## Install (Otomasatis)
+
+Cukup jalankan 1 perintah ini di VPS:
 
 ```bash
-npm install
+wget https://raw.githubusercontent.com/arivpnstores/backed-totaluser/main/install.sh && chmod +x install.sh && sudo ./install.sh
 ```
+
+Script installer akan otomatis:
+- Install Node.js
+- Install PM2
+- Install dependencies
+- Start server dengan PM2
+- Buka port firewall
 
 ## Menjalankan
 
@@ -28,16 +53,10 @@ Server akan berjalan di port **1234** (default).
 PORT=8080 npm start
 ```
 
-### Ganti API Key
-
-```bash
-API_KEY=RAHASIA123 npm start
-```
-
 ## Menjalankan dengan PM2
 
 ```bash
-pm2 start index.js --name vpn-backend
+pm2 start ecosystem.config.js
 pm2 save
 pm2 startup
 ```
@@ -79,26 +98,17 @@ Response:
 
 ```
 GET /totaluser
-Header: x-api-key: ARIVPN123
 ```
 
 Response (200):
 
 ```json
 {
-  "ssh": 69,
-  "vmess": 76,
-  "vless": 10,
-  "trojan": 11,
-  "total": 166
-}
-```
-
-Response (401 - API Key salah/tidak ada):
-
-```json
-{
-  "error": "Unauthorized"
+  "ssh": 96,
+  "vmess": 68,
+  "vless": 7,
+  "trojan": 5,
+  "total": 176
 }
 ```
 
@@ -106,23 +116,59 @@ Response (500 - Command gagal):
 
 ```json
 {
-  "error": "Gagal menjalankan command p0t4t0",
+  "error": "Gagal menjalankan command desain p0t4t0",
   "details": "error message"
 }
 ```
 
-## Contoh Penggunaan dengan curl
+## Contoh Penggunaan
+
+### curl
 
 ```bash
-curl -H "x-api-key: ARIVPN123" http://IP_SERVER:1234/totaluser
+curl http://IP_SERVER:1234/totaluser
 ```
 
-## Contoh Penggunaan dengan JavaScript
+### JavaScript
 
 ```javascript
-const res = await fetch("http://IP_SERVER:1234/totaluser", {
-  headers: { "x-api-key": "ARIVPN123" },
-});
+const res = await fetch("http://IP_SERVER:1234/totaluser");
 const data = await res.json();
 console.log(data);
+```
+
+### Telegram Bot
+
+```javascript
+const total = await fetch("http://IP_SERVER:1234/totaluser")
+  .then((r) => r.json())
+  .then((d) => d.total);
+bot.sendMessage(chatId, `Total user VPN: ${total}`);
+```
+
+## Output Example
+
+```
+┌─────────────────────────────────────────────────┐
+│                 POTATO TUNNELING                │
+└─────────────────────────────────────────────────┘
+     ┌───────────────────────────────────────┐
+                   LIST ACCOUNTS
+          SSH/OPENVPN    : 96  ACCOUNT
+          VMESS          : 68  ACCOUNT
+          VLESS          : 7   ACCOUNT
+          TROJAN         : 5   ACCOUNT
+     └───────────────────────────────────────┘
+```
+
+API akan mengkonversi output di atas menjadi:
+
+```json
+{
+  "ssh": 96,
+  "vmess": 68,
+  "vless": 7,
+  "trojan": 5,
+  "total": 176
+}
 ```
