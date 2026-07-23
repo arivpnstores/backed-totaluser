@@ -1,0 +1,20 @@
+{
+  "name": "vpn-total-user-backend",
+  "version": "1.0.0",
+  "description": "Mini backend REST API to get total VPN user accounts",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "keywords": [
+    "vpn",
+    "backend",
+    "api",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC"
+}
