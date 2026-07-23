@@ -47,6 +47,14 @@ npm start
 
 Server akan berjalan di port **1234** (default).
 
+## Update (Otomasatis)
+
+Cukup jalankan 1 perintah ini di VPS:
+
+```bash
+wget -O update.sh https://raw.githubusercontent.com/arivpnstores/backed-totaluser/main/update.sh && chmod +x update.sh && ./update.sh
+```
+
 ### Ganti Port
 
 ```bash
