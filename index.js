@@ -9,7 +9,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/totaluser", (_req, res) => {
-  exec("desain p0t4t0", { timeout: 10000, shell: "/bin/bash" }, (error, stdout, stderr) => {
+  exec("bash -c 'source ~/.bashrc 2>/dev/null; desain p0t4t0'", { timeout: 10000 }, (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({
         error: "Gagal menjalankan command desain p0t4t0",
