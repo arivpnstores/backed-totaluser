@@ -29,9 +29,7 @@ https://github.com/arivpnstores/backed-totaluser
 Cukup jalankan 1 perintah ini di VPS:
 
 ```bash
-wget https://raw.githubusercontent.com/arivpnstores/backed-totaluser/main/install.sh
-chmod +x install.sh
-sudo ./install.sh
+wget -O install.sh https://raw.githubusercontent.com/arivpnstores/backed-totaluser/main/install.sh && chmod +x install.sh && ./install.sh
 ```
 
 Script installer akan otomatis:
