@@ -30,7 +30,7 @@ else
 fi
 
 # Clone or update repo
-INSTALL_DIR="/opt/vpn-backend"
+INSTALL_DIR="/root/backed-totaluser"
 echo "[3/6] Download source code..."
 if [ -d "$INSTALL_DIR" ]; then
   cd "$INSTALL_DIR"
