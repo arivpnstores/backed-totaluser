@@ -17,7 +17,7 @@ const countDatabaseUsers = () => {
 
   const xray = { vmess: 0, vless: 0, trojan: 0 };
   try {
-    const lines = fs.readFileSync("/etc/a4nstore-tunnel/xray-users.db", "utf8").split(/\\r?\\n/);
+    const lines = fs.readFileSync("/etc/a4nstore-tunnel/xray-users.db", "utf8").split(/\r?\n/);
     for (const line of lines) {
       const fields = line.split("|");
       const protocol = fields[0];
@@ -40,7 +40,7 @@ const countDatabaseUsers = () => {
 
 const countLines = (file, predicate) => {
   try {
-    return fs.readFileSync(file, "utf8").split(/\\r?\\n/).filter(predicate).length;
+    return fs.readFileSync(file, "utf8").split(/\r?\n/).filter(predicate).length;
   } catch (_error) {
     return 0;
   }
