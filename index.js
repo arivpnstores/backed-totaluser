@@ -68,8 +68,8 @@ const sendCounts = (res, counts, source) => res.json({
 });
 
 app.get("/totaluser", (_req, res) => {
-  exec("desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
-    if (!error) {
+  exec("command -v desain >/dev/null 2>&1 && timeout 8s desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
+    if (!error && stdout.trim()) {
       return sendCounts(res, parsePotatoOutput(stdout), "p0t4t0");
     }
 
