@@ -1,5 +1,5 @@
 const express = require("express");
-const { exec } = require("child_process");
+const { exec, execFile } = require("child_process");
 const fs = require("fs");
 
 const app = express();
@@ -73,7 +73,33 @@ app.get("/totaluser", (_req, res) => {
       return sendCounts(res, parsePotatoOutput(stdout), "p0t4t0");
     }
 
-    return sendCounts(res, countDatabaseUsers(), "database");
+    const python = [
+      "import json",
+      "from pathlib import Path",
+      "def rows(path, protocol=None):",
+      "    try: lines = Path(path).read_text().splitlines()",
+      "    except Exception: return 0",
+      "    total = 0",
+      "    for line in lines:",
+      "        f = line.split('|')",
+      "        if protocol is None:",
+      "            ok = len(f) >= 3 and f[0] and not f[0].startswith('trial-')",
+      "        else:",
+      "            ok = len(f) >= 2 and f[0] == protocol and f[1] and not f[1].startswith('trial-')",
+      "        total += int(bool(ok))",
+      "    return total",
+      "d = {'ssh': rows('/etc/a4nstore-tunnel/users.db'), 'vmess': rows('/etc/a4nstore-tunnel/xray-users.db', 'vmess'), 'vless': rows('/etc/a4nstore-tunnel/xray-users.db', 'vless'), 'trojan': rows('/etc/a4nstore-tunnel/xray-users.db', 'trojan')}",
+      "print(json.dumps(d))",
+    ].join("\\n");
+
+    execFile("python3", ["-c", python], { timeout: 5000 }, (pythonError, stdout) => {
+      if (pythonError) return sendCounts(res, countDatabaseUsers(), "database");
+      try {
+        return sendCounts(res, JSON.parse(stdout), "database-python");
+      } catch (_error) {
+        return sendCounts(res, countDatabaseUsers(), "database");
+      }
+    });
   });
 });
 
