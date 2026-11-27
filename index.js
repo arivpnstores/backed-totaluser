@@ -9,34 +9,54 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+const scDatabase = () => {
+  const candidates = [
+    process.env.POTATO_DB,
+    process.env.DB_PATH,
+    "/etc/sc-1forcr/sc-1forcr.db",
+    "/etc/sc-1forcr/database.db",
+    "/root/tunnel-sync/tunnel.db",
+  ].filter(Boolean);
+  return candidates.find((file) => fs.existsSync(file));
+};
+
+const countScDatabaseUsers = (callback) => {
+  const database = scDatabase();
+  if (!database) return callback(null);
+
+  const sql = `SELECT
+    (SELECT COUNT(*) FROM account_sshs WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS ssh,
+    (SELECT COUNT(*) FROM account_vmesses WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS vmess,
+    (SELECT COUNT(*) FROM account_vlesses WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS vless,
+    (SELECT COUNT(*) FROM account_trojans WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS trojan;`;
+
+  execFile("sqlite3", ["-json", database, sql], { timeout: 5000 }, (error, stdout) => {
+    if (error) return callback(null);
+    try {
+      const row = JSON.parse(stdout)[0];
+      callback({ ssh: row.ssh, vmess: row.vmess, vless: row.vless, trojan: row.trojan });
+    } catch (_error) {
+      callback(null);
+    }
+  });
+};
+
 const countDatabaseUsers = () => {
   const ssh = countLines("/etc/a4nstore-tunnel/users.db", (line) => {
     const username = line.split("|")[0] || "";
     return line.split("|").length >= 3 && username && !username.startsWith("trial-");
   });
-
   const xray = { vmess: 0, vless: 0, trojan: 0 };
   try {
-    const lines = fs.readFileSync("/etc/a4nstore-tunnel/xray-users.db", "utf8").split(/\r?\n/);
-    for (const line of lines) {
-      const fields = line.split("|");
-      const protocol = fields[0];
-      const username = fields[1] || "";
-      if (xray[protocol] !== undefined && username && !username.startsWith("trial-")) {
-        xray[protocol]++;
-      }
+    for (const line of fs.readFileSync("/etc/a4nstore-tunnel/xray-users.db", "utf8").split(/\r?\n/)) {
+      const [protocol, username] = line.split("|");
+      if (xray[protocol] !== undefined && username && !username.startsWith("trial-")) xray[protocol]++;
     }
-  } catch (_error) {
-    // Database fallback unavailable; keep zero counts.
-  }
-
-  return {
-    ssh,
-    vmess: xray.vmess,
-    vless: xray.vless,
-    trojan: xray.trojan,
-  };
+  } catch (_error) {}
+  return { ssh, ...xray };
 };
+
+const hasA4nstore = () => fs.existsSync("/etc/a4nstore-tunnel/users.db") || fs.existsSync("/etc/a4nstore-tunnel/xray-users.db");
 
 const countLines = (file, predicate) => {
   try {
@@ -68,7 +88,11 @@ const sendCounts = (res, counts, source) => res.json({
 });
 
 app.get("/totaluser", (_req, res) => {
-  exec("command -v desain >/dev/null 2>&1 && timeout 8s desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
+  countScDatabaseUsers((scCounts) => {
+    if (scCounts) return sendCounts(res, scCounts, "1forcr");
+    if (hasA4nstore()) return sendCounts(res, countDatabaseUsers(), "a4nstore");
+
+    exec("command -v desain >/dev/null 2>&1 && timeout 8s desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
     if (!error && stdout.trim()) {
       return sendCounts(res, parsePotatoOutput(stdout), "p0t4t0");
     }
@@ -99,6 +123,7 @@ app.get("/totaluser", (_req, res) => {
       } catch (_error) {
         return sendCounts(res, countDatabaseUsers(), "database");
       }
+    });
     });
   });
 });
