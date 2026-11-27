@@ -6,9 +6,9 @@ Mini backend REST API untuk mengambil jumlah total akun VPN dari server mengguna
 
 Backend otomatis mendeteksi panel yang tersedia dengan urutan:
 
-1. **SC 1FORCR** — membaca database SQLite tabel `account_*`.
-2. **A4NStore** — membaca `users.db` dan `xray-users.db`.
-3. **Potato Tunneling (p0t4t0)** — menjalankan command `desain p0t4t0`.
+1. **Potato Tunneling (p0t4t0)** — menjalankan command `desain p0t4t0`.
+2. **SC 1FORCR** — membaca database SQLite tabel `account_*`.
+3. **A4NStore** — membaca `users.db` dan `xray-users.db`.
 
 Username yang diawali `trial` tidak dihitung.
 
@@ -19,7 +19,7 @@ Script panel berjalan di VPS Linux (Ubuntu/Debian) dan menyediakan layanan:
 - Vless (Xray)
 - Trojan (Xray)
 
-Backend membaca sumber aktif otomatis lalu menampilkan jumlah akun VPN dalam format JSON. Jika SC 1FORCR atau A4NStore terdeteksi, command `desain p0t4t0` tidak dijalankan.
+Backend membaca sumber aktif otomatis lalu menampilkan jumlah akun VPN dalam format JSON. Jika command `desain p0t4t0` tersedia dan menghasilkan jumlah user lebih dari 0, hasil Potato dipakai. Jika gagal atau menghasilkan 0, backend lanjut ke SC 1FORCR lalu A4NStore.
 
 ## Persyaratan
 
@@ -119,7 +119,7 @@ GET /totaluser
 Deteksi panel otomatis:
 
 ```text
-SC 1FORCR → A4NStore → Potato p0t4t0
+Potato p0t4t0 → SC 1FORCR → A4NStore
 ```
 
 Response menyertakan field `source` dengan nilai `1forcr`, `a4nstore`, atau `p0t4t0`.

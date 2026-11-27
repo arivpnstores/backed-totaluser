@@ -100,16 +100,17 @@ const sendCounts = (res, counts, source) => res.json({
 });
 
 app.get("/totaluser", (_req, res) => {
-  countScDatabaseUsers((scCounts) => {
-    if (scCounts) return sendCounts(res, scCounts, "1forcr");
-    if (hasA4nstore()) return sendCounts(res, countDatabaseUsers(), "a4nstore");
-
-    exec("command -v desain >/dev/null 2>&1 && timeout 8s desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
-    if (!error && stdout.trim()) {
-      return sendCounts(res, parsePotatoOutput(stdout), "p0t4t0");
+  exec("command -v desain >/dev/null 2>&1 && timeout 8s desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
+    const potatoCounts = !error && stdout.trim() ? parsePotatoOutput(stdout) : null;
+    if (potatoCounts && Object.values(potatoCounts).some((value) => value > 0)) {
+      return sendCounts(res, potatoCounts, "p0t4t0");
     }
 
-    const python = [
+    countScDatabaseUsers((scCounts) => {
+      if (scCounts) return sendCounts(res, scCounts, "1forcr");
+      if (hasA4nstore()) return sendCounts(res, countDatabaseUsers(), "a4nstore");
+
+      const python = [
       "import json",
       "from pathlib import Path",
       "def rows(path, protocol=None):",
