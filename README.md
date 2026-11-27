@@ -6,7 +6,7 @@ Mini backend REST API untuk mengambil jumlah total akun VPN dari server mengguna
 
 Backend otomatis mendeteksi panel yang tersedia dengan urutan:
 
-1. **Potato Tunneling (p0t4t0)** — menjalankan command `desain p0t4t0`.
+1. **Potato Tunneling (p0t4t0)** — menjalankan command `desain p0t4t0` dengan timeout 60 detik.
 2. **SC 1FORCR** — membaca database SQLite tabel `account_*`.
 3. **A4NStore** — membaca `users.db` dan `xray-users.db`.
 

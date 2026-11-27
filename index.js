@@ -100,7 +100,7 @@ const sendCounts = (res, counts, source) => res.json({
 });
 
 app.get("/totaluser", (_req, res) => {
-  exec("command -v desain >/dev/null 2>&1 && timeout 8s desain p0t4t0", { timeout: 10000 }, (error, stdout) => {
+  exec("command -v desain >/dev/null 2>&1 && timeout 60s desain p0t4t0", { timeout: 65000 }, (error, stdout) => {
     const potatoCounts = !error && stdout.trim() ? parsePotatoOutput(stdout) : null;
     if (potatoCounts && Object.values(potatoCounts).some((value) => value > 0)) {
       return sendCounts(res, potatoCounts, "p0t4t0");
