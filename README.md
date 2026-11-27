@@ -1,17 +1,25 @@
 # VPN Total User Backend
 
-Mini backend REST API untuk mengambil jumlah total akun VPN dari server menggunakan **Potato Tunneling (p0t4t0)**.
+Mini backend REST API untuk mengambil jumlah total akun VPN dari server menggunakan **Potato Tunneling (p0t4t0)**, **A4NStore**, atau **SC 1FORCR**.
 
 ## Tentang
 
-Backend ini dibuat khusus untuk server yang menggunakan script **Potato Tunneling** (`p0t4t0`). Script `p0t4t0` adalah tool管理 panel VPN yang berjalan di VPS Linux (Ubuntu/Debian) dan menyediakan layanan:
+Backend otomatis mendeteksi panel yang tersedia dengan urutan:
+
+1. **SC 1FORCR** — membaca database SQLite tabel `account_*`.
+2. **A4NStore** — membaca `users.db` dan `xray-users.db`.
+3. **Potato Tunneling (p0t4t0)** — menjalankan command `desain p0t4t0`.
+
+Username yang diawali `trial` tidak dihitung.
+
+Script panel berjalan di VPS Linux (Ubuntu/Debian) dan menyediakan layanan:
 
 - SSH/OpenVPN
 - Vmess (Xray)
 - Vless (Xray)
 - Trojan (Xray)
 
-Backend ini akan menjalankan command `desain p0t4t0` lalu membaca output-nya untuk menampilkan jumlah akun VPN dalam format JSON.
+Backend membaca sumber aktif otomatis lalu menampilkan jumlah akun VPN dalam format JSON. Jika SC 1FORCR atau A4NStore terdeteksi, command `desain p0t4t0` tidak dijalankan.
 
 ## Persyaratan
 
@@ -104,9 +112,17 @@ Response:
 
 ### Total User
 
-```
+```text
 GET /totaluser
 ```
+
+Deteksi panel otomatis:
+
+```text
+SC 1FORCR → A4NStore → Potato p0t4t0
+```
+
+Response menyertakan field `source` dengan nilai `1forcr`, `a4nstore`, atau `p0t4t0`.
 
 Response (200):
 
@@ -124,7 +140,7 @@ Response (500 - Command gagal):
 
 ```json
 {
-  "error": "Gagal menjalankan command desain p0t4t0",
+  "error": "Tidak dapat membaca data user dari SC 1FORCR, A4NStore, atau p0t4t0",
   "details": "error message"
 }
 ```
