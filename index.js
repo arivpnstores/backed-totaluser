@@ -5,6 +5,17 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 1234;
 
+const loadScEnv = () => {
+  try {
+    for (const line of fs.readFileSync("/etc/sc-1forcr.env", "utf8").split(/\r?\n/)) {
+      const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+      if (match && !process.env[match[1]]) process.env[match[1]] = match[2].replace(/^['\"]|['\"]$/g, "");
+    }
+  } catch (_error) {}
+};
+
+loadScEnv();
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
@@ -15,6 +26,7 @@ const scDatabase = () => {
     process.env.DB_PATH,
     "/etc/sc-1forcr/sc-1forcr.db",
     "/etc/sc-1forcr/database.db",
+    "/usr/sbin/potatonc/potato.db",
     "/root/tunnel-sync/tunnel.db",
   ].filter(Boolean);
   return candidates.find((file) => fs.existsSync(file));
