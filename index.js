@@ -82,14 +82,14 @@ const parsePotatoOutput = (stdout) => {
   const clean = stdout.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "");
   const lines = clean.split(/\r?\n/);
   const extractNumber = (line) => {
-    const match = line?.match(/:\s*(\d+)/);
+    const match = line?.match(/:\s*(\d+)\s*ACCOUNT/i);
     return match ? parseInt(match[1], 10) : 0;
   };
   return {
-    ssh: extractNumber(lines.find((line) => /SSH\s*\/\s*OPENVPN|SSH/i.test(line))),
-    vmess: extractNumber(lines.find((line) => /VMESS/i.test(line))),
-    vless: extractNumber(lines.find((line) => /VLESS/i.test(line))),
-    trojan: extractNumber(lines.find((line) => /TROJAN/i.test(line))),
+    ssh: extractNumber(lines.find((line) => /SSH/i.test(line) && /ACCOUNT/i.test(line))),
+    vmess: extractNumber(lines.find((line) => /VMESS/i.test(line) && /ACCOUNT/i.test(line))),
+    vless: extractNumber(lines.find((line) => /VLESS/i.test(line) && /ACCOUNT/i.test(line))),
+    trojan: extractNumber(lines.find((line) => /TROJAN/i.test(line) && /ACCOUNT/i.test(line))),
   };
 };
 
