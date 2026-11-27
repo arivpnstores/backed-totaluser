@@ -25,10 +25,10 @@ const countScDatabaseUsers = (callback) => {
   if (!database) return callback(null);
 
   const sql = `SELECT
-    (SELECT COUNT(*) FROM account_sshs WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS ssh,
-    (SELECT COUNT(*) FROM account_vmesses WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS vmess,
-    (SELECT COUNT(*) FROM account_vlesses WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS vless,
-    (SELECT COUNT(*) FROM account_trojans WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial-%') AS trojan;`;
+    (SELECT COUNT(*) FROM account_sshs WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial%') AS ssh,
+    (SELECT COUNT(*) FROM account_vmesses WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial%') AS vmess,
+    (SELECT COUNT(*) FROM account_vlesses WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial%') AS vless,
+    (SELECT COUNT(*) FROM account_trojans WHERE LOWER(COALESCE(username,'')) NOT LIKE 'trial%') AS trojan;`;
 
   execFile("sqlite3", ["-json", database, sql], { timeout: 5000 }, (error, stdout) => {
     if (error) return callback(null);
@@ -44,13 +44,13 @@ const countScDatabaseUsers = (callback) => {
 const countDatabaseUsers = () => {
   const ssh = countLines("/etc/a4nstore-tunnel/users.db", (line) => {
     const username = line.split("|")[0] || "";
-    return line.split("|").length >= 3 && username && !username.startsWith("trial-");
+    return line.split("|").length >= 3 && username && !username.toLowerCase().startsWith("trial");
   });
   const xray = { vmess: 0, vless: 0, trojan: 0 };
   try {
     for (const line of fs.readFileSync("/etc/a4nstore-tunnel/xray-users.db", "utf8").split(/\r?\n/)) {
       const [protocol, username] = line.split("|");
-      if (xray[protocol] !== undefined && username && !username.startsWith("trial-")) xray[protocol]++;
+      if (xray[protocol] !== undefined && username && !username.toLowerCase().startsWith("trial")) xray[protocol]++;
     }
   } catch (_error) {}
   return { ssh, ...xray };
@@ -107,9 +107,9 @@ app.get("/totaluser", (_req, res) => {
       "    for line in lines:",
       "        f = line.split('|')",
       "        if protocol is None:",
-      "            ok = len(f) >= 3 and f[0] and not f[0].startswith('trial-')",
+      "            ok = len(f) >= 3 and f[0] and not f[0].lower().startswith('trial')",
       "        else:",
-      "            ok = len(f) >= 2 and f[0] == protocol and f[1] and not f[1].startswith('trial-')",
+      "            ok = len(f) >= 2 and f[0] == protocol and f[1] and not f[1].lower().startswith('trial')",
       "        total += int(bool(ok))",
       "    return total",
       "d = {'ssh': rows('/etc/a4nstore-tunnel/users.db'), 'vmess': rows('/etc/a4nstore-tunnel/xray-users.db', 'vmess'), 'vless': rows('/etc/a4nstore-tunnel/xray-users.db', 'vless'), 'trojan': rows('/etc/a4nstore-tunnel/xray-users.db', 'trojan')}",
